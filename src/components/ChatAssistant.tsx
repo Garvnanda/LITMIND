@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Send, Loader2, Bot, User } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Message {
   role: "user" | "assistant";
@@ -50,17 +51,19 @@ export const ChatAssistant = ({ bookTitle, selectedText, onClose }: ChatAssistan
     setIsLoading(true);
 
     try {
-      // This would call your chat edge function
-      // For now, simulating AI response
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const { data, error } = await supabase.functions.invoke('chat', {
+        body: { 
+          messages: [...messages, userMessage].map(m => ({ role: m.role, content: m.content })),
+          bookTitle,
+          bookContext: selectedText || ''
+        }
+      });
+
+      if (error) throw error;
       
       const assistantMessage: Message = {
         role: "assistant",
-        content: `I understand you're asking about: "${input}". In the context of "${bookTitle}", this relates to the core themes of understanding and knowledge across cultures. 
-
-[This is a simulated response. In the full implementation, this would use AI to provide contextual explanations based on the book content and your question.]
-
-Would you like me to elaborate on any specific aspect?`,
+        content: data.message,
       };
       
       setMessages((prev) => [...prev, assistantMessage]);

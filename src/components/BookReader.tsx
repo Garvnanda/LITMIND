@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { ChatAssistant } from "./ChatAssistant";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Book {
   id: string;
@@ -36,32 +37,54 @@ export const BookReader = ({ book, onBack }: BookReaderProps) => {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Simulate loading book content
-    // In a real app, this would fetch from Google Books API or similar
-    setContent(`${book.title}
-
-by ${book.authors.join(", ")}
-
-${book.description}
-
-This is a preview of the book content. In a full implementation, this would load the actual book text from the source.
-
-Chapter 1: Introduction
-
-The story begins in a world where knowledge is power, and access to information determines one's destiny. Our protagonist embarks on a journey to discover ancient texts that hold the secrets to understanding different cultures and languages.
-
-The ability to read and comprehend literature from around the world opens doors to infinite possibilities. Each book is a gateway to another mind, another time, another perspective.
-
-[Note: This is sample content. The full implementation would integrate with book APIs to load actual book text.]`);
+    const fetchBookContent = async () => {
+      try {
+        // Fetch book content from Google Books API
+        const response = await fetch(
+          `https://www.googleapis.com/books/v1/volumes/${book.id}?key=AIzaSyDR5clW3S8ChtGPGQdBL7Ty-3FKyKzXQME`
+        );
+        const data = await response.json();
+        
+        // Extract content from various possible fields
+        let bookText = '';
+        
+        if (data.volumeInfo.description) {
+          bookText += `${book.title}\n\nby ${book.authors.join(", ")}\n\n${data.volumeInfo.description}\n\n`;
+        }
+        
+        // Try to get preview content if available
+        if (data.accessInfo?.textToSpeechPermission === 'ALLOWED' && book.previewLink) {
+          bookText += `\nYou can read more at: ${book.previewLink}\n\n`;
+        }
+        
+        // Add sample content
+        bookText += `Preview Content:\n\n`;
+        bookText += book.description || 'This book is available for reading. Use the preview link to access the full content.';
+        
+        setContent(bookText);
+      } catch (error) {
+        console.error('Error fetching book content:', error);
+        // Fallback content
+        setContent(`${book.title}\n\nby ${book.authors.join(", ")}\n\n${book.description}\n\nPreview content is not available for this book. Please visit: ${book.previewLink}`);
+      }
+    };
+    
+    fetchBookContent();
   }, [book]);
 
   const translateText = async () => {
     setIsTranslating(true);
     try {
-      // This would call your translation edge function
-      // For now, simulating translation
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      setTranslatedContent(`[Translated Content]\n\n${content}\n\n[Translation provided by AI - in a full implementation, this would be the actual translated text in your chosen language]`);
+      const { data, error } = await supabase.functions.invoke('translate', {
+        body: { 
+          text: content,
+          targetLanguage: 'Hindi' // You can make this configurable later
+        }
+      });
+
+      if (error) throw error;
+
+      setTranslatedContent(data.translatedText);
       setShowTranslation(true);
       toast({
         title: "Translation complete",
