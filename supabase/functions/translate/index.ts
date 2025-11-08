@@ -12,12 +12,40 @@ serve(async (req) => {
 
   try {
     const { text, targetLanguage } = await req.json();
+    
+    if (!text || !targetLanguage) {
+      throw new Error('Text and target language are required');
+    }
+
     console.log('Translation request:', { textLength: text.length, targetLanguage });
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
+
+    const languageNames: Record<string, string> = {
+      en: "English",
+      hi: "Hindi",
+      pa: "Punjabi",
+      ar: "Arabic",
+      fr: "French",
+      es: "Spanish",
+      ta: "Tamil",
+      te: "Telugu",
+      bn: "Bengali",
+      mr: "Marathi",
+      gu: "Gujarati",
+      ru: "Russian",
+      ko: "Korean",
+      ml: "Malayalam",
+      nl: "Dutch",
+      ur: "Urdu",
+      ja: "Japanese",
+      zh: "Chinese (Simplified)"
+    };
+
+    const targetLangName = languageNames[targetLanguage] || targetLanguage;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -30,7 +58,7 @@ serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: `You are a professional book translator. Translate the given text to ${targetLanguage}. Preserve the formatting, tone, and literary style. Only return the translated text, nothing else.`
+            content: `You are a professional book translator. Translate the given text to ${targetLangName}. Maintain all formatting including markdown syntax (# headers, ** bold, etc.), paragraph breaks, and structure. Preserve the literary style and tone. Only return the translated text, nothing else.`
           },
           {
             role: "user",
