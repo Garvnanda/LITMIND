@@ -35,7 +35,7 @@ export const Hero = ({ onGetStarted }: HeroProps) => {
 
           {/* Subtitle */}
           <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            Breaking language barriers — one book at a time. Translate entire books instantly and understand every concept with AI assistance.
+            Breaking language barriers. Translate entire books instantly and understand every concept with assistance.
           </p>
 
           {/* CTA Button */}
