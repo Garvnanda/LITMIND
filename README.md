@@ -1,8 +1,3 @@
-Perfect — that folder structure tells me you have a **full-stack FastAPI + React project**, with all backend logic under `/supabase/functions` and the frontend in `/src`.
-Here’s a clean, professional **README.md** template that fits your exact setup and tools (Gemini API, OpenRouter, Auth0).
-
----
-
 ## 🧠 **LITMIND – AI-Powered Book Translation Platform**
 
 LITMIND is an AI-driven web app that lets users translate books into any language while preserving tone, style, and cultural nuance.
